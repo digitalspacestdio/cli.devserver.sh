@@ -3,6 +3,7 @@ import { input, password } from '@inquirer/prompts';
 import { homedir } from 'os';
 import { AuthService } from './auth.service';
 import { sdkForConsole } from '../../lib/sdk-for-cli/sdks';
+import loading from '../../lib/loading';
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface LoginCommandOptions {}
 
@@ -27,14 +28,19 @@ export class LoginCommand extends CommandRunner {
     const userPassword = await password({ message: 'Please enter your password', mask: '*' });
 
     try {
-      await this.authService.accountCreateEmailSession({
-        email: userEmail,
-        password: userPassword,
-        parseOutput: false,
-        sdk: sdk,
-      });
-      await this.authService.accountCreateJWT({ sdk: sdk });
-      console.log('JWT Token saved to: ' + homedir() + '/.devserver.sh/jwt.json');
+      await loading(
+        'Logging in...',
+        async () => {
+          await this.authService.accountCreateEmailSession({
+            email: userEmail,
+            password: userPassword,
+            parseOutput: false,
+            sdk: sdk,
+          });
+          await this.authService.accountCreateJWT({ sdk: sdk });
+        },
+        true,
+      );
     } catch (err) {
       console.error('Error (' + err?.code + '): ' + err?.response?.message);
     }

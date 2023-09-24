@@ -3,7 +3,7 @@ import https from 'https';
 import axios, { ResponseType } from 'axios';
 import * as JSONbigint from 'json-bigint';
 import FormData from 'form-data';
-import AppwriteException from './exception';
+import { AppwriteException } from './exceptions';
 import { globalConfig } from './config';
 const JSONbig = JSONbigint({ storeAsString: false });
 

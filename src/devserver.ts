@@ -11,7 +11,7 @@ async function bootstrap() {
     curlirize(axios);
   }
 
-  await CommandFactory.run(AppModule, { logger: ['error'] });
+  return await CommandFactory.run(AppModule, 'trace' === level() ? { logger: ['debug'] } : { logger: ['warn'] });
 }
 
 bootstrap();

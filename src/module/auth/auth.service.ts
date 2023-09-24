@@ -3,8 +3,8 @@ import { sdkForConsole, sdkForProject } from '../../lib/sdk-for-cli/sdks';
 import { parse } from '../../lib/parser';
 import { homedir } from 'os';
 import * as fs from 'fs';
-
-import Client from 'src/lib/sdk-for-cli/client';
+import Client from '../../lib/sdk-for-cli/client';
+import { AppwriteException } from '../../lib/sdk-for-cli/exceptions';
 
 interface JwtToken {
   jwt: string;
@@ -19,16 +19,12 @@ export class AuthService {
   async getJwtToken(): Promise<JwtToken> {
     if (undefined === this.jwtToken) {
       if (fs.existsSync(this.jwtTokenPath)) {
-        try {
-          const jwtTokenString = fs.readFileSync(this.jwtTokenPath).toString();
-          const jwtToken = JSON.parse(jwtTokenString) as JwtToken;
-          const expireAt = new Date(jwtToken.expire_at || 0);
-          const now = new Date(Date.now());
-          if (now.getTime() > expireAt.getTime()) {
-            this.jwtToken = await this.accountCreateJWT();
-          }
-        } catch (e) {
-          throw e;
+        const jwtTokenString = fs.readFileSync(this.jwtTokenPath).toString();
+        const jwtToken = JSON.parse(jwtTokenString) as JwtToken;
+        const expireAt = new Date(jwtToken.expire_at || 0);
+        const now = new Date(Date.now());
+        if (now.getTime() > expireAt.getTime()) {
+          this.jwtToken = await this.accountCreateJWT();
         }
       }
     }
