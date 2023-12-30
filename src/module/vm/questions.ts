@@ -5,8 +5,7 @@ export const questionsVmCreate = [
     type: 'input',
     name: 'name',
     message: 'Virtual machine name (3 - 32 symbols)',
-    default: () =>
-      uniqueNamesGenerator({ dictionaries: [adjectives] }) + '-' + uniqueNamesGenerator({ dictionaries: [animals] }),
+    default: () => uniqueNamesGenerator({ dictionaries: [adjectives] }) + '-' + uniqueNamesGenerator({ dictionaries: [animals] }),
     validate(value: string | any[]) {
       if (value.length < 3) {
         return 'Minimum length: 3';

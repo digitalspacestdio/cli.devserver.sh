@@ -27,22 +27,16 @@ export class VmService {
   }
 
   public async getVmList() {
-    const vmList = await (
-      await this.appwrite.getDatabases()
-    ).listDocuments(this.appwrite.databaseId, this.collectionId);
+    const vmList = await (await this.appwrite.getDatabases()).listDocuments(this.appwrite.databaseId, this.collectionId);
 
     return vmList;
   }
 
   public async createVm(dto: VmCreateDto) {
-    return await (
-      await this.appwrite.getDatabases()
-    ).createDocument(this.appwrite.databaseId, this.collectionId, ID.unique(), dto);
+    return await (await this.appwrite.getDatabases()).createDocument(this.appwrite.databaseId, this.collectionId, ID.unique(), dto);
   }
 
   public async destroyVm(dto: VmDestroyDto) {
-    return await (
-      await this.appwrite.getDatabases()
-    ).deleteDocument(this.appwrite.databaseId, this.collectionId, dto.id);
+    return await (await this.appwrite.getDatabases()).deleteDocument(this.appwrite.databaseId, this.collectionId, dto.id);
   }
 }
