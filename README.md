@@ -33,7 +33,7 @@ $ npm install
 ```
 
 
-## Development 
+## Run Commands in Development Mode 
 ```bash
-$ node -r ts-node/register src/devserver.ts login
+$ node -r ts-node/register src/devserver.ts auth:login
 ```
