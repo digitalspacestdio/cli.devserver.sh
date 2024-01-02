@@ -1,6 +1,5 @@
 import { Command, CommandRunner, Option } from 'nest-commander';
 import { input, password } from '@inquirer/prompts';
-import { homedir } from 'os';
 import { AuthService } from './auth.service';
 import { sdkForConsole } from '../../lib/sdk-for-cli/sdks';
 import loading from '../../lib/loading';

@@ -4,7 +4,7 @@ export const questionsVmCreate = [
   {
     type: 'input',
     name: 'name',
-    message: 'Virtual machine name (3 - 32 symbols)',
+    message: 'Machine name (3 - 32 symbols)',
     default: () => uniqueNamesGenerator({ dictionaries: [adjectives] }) + '-' + uniqueNamesGenerator({ dictionaries: [animals] }),
     validate(value: string | any[]) {
       if (value.length < 3) {
@@ -20,14 +20,14 @@ export const questionsVmCreate = [
   {
     type: 'rawlist',
     name: 'size',
-    message: 'Virtual machine size',
+    message: 'Machine size',
     choices: ['s', 'm', 'l', 'xl'],
     default: 's',
   },
   {
     type: 'input',
     name: 'username',
-    message: 'Virtual machine username  (1 - 32 symbols)',
+    message: 'Username  (1 - 32 symbols)',
     default: 'developer',
     validate(value: string | any[]) {
       if (value.length < 3) {
@@ -43,7 +43,7 @@ export const questionsVmCreate = [
   {
     type: 'password',
     name: 'password',
-    message: 'Virtual machine password',
+    message: 'Password (only the hash will be used)',
     mask: '*',
     validate(value: string) {
       if (!value) {
@@ -64,7 +64,7 @@ export const questionsVmDestroy = [
   {
     type: 'input',
     name: 'id',
-    message: 'Virtual machine id',
+    message: 'Machine ID',
     validate(value: string | any[]) {
       if (!value.length) {
         return 'Please enter a value';

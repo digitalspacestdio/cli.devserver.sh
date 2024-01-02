@@ -7,13 +7,46 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Debug My Command",
+            "name": "Debug Command: auth:login",
+            "console" : "integratedTerminal",
             "runtimeArgs": ["-r", "ts-node/register"],
-            "args": ["${workspaceFolder}/src/devserver.ts"],
+            "args": ["${workspaceFolder}/src/devserver.ts", "auth:login"],
             "skipFiles": ["<node_internals>/**"],
             "sourceMaps": true,
-            "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+            //"outFiles": ["${workspaceFolder}/dist/**/*.js"]
         },
-        
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Command: vm:list",
+            "console" : "integratedTerminal",
+            "runtimeArgs": ["-r", "ts-node/register"],
+            "args": ["${workspaceFolder}/src/devserver.ts", "vm:list"],
+            "skipFiles": ["<node_internals>/**"],
+            "sourceMaps": true,
+            //"outFiles": ["${workspaceFolder}/dist/**/*.js"]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Command: vm:create",
+            "console" : "integratedTerminal",
+            "runtimeArgs": ["-r", "ts-node/register"],
+            "args": ["${workspaceFolder}/src/devserver.ts", "vm:create"],
+            "skipFiles": ["<node_internals>/**"],
+            "sourceMaps": true,
+            //"outFiles": ["${workspaceFolder}/dist/**/*.js"]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Command: vm:destroy",
+            "console" : "integratedTerminal",
+            "runtimeArgs": ["-r", "ts-node/register"],
+            "args": ["${workspaceFolder}/src/devserver.ts", "vm:destroy"],
+            "skipFiles": ["<node_internals>/**"],
+            "sourceMaps": true,
+            //"outFiles": ["${workspaceFolder}/dist/**/*.js"]
+        },
     ]
 }

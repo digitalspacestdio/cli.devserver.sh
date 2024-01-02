@@ -6,8 +6,9 @@ import apacheMd5 from '../../lib/apache-md5';
 import { createHash } from 'crypto';
 import * as colors from 'colors';
 import loading from '../../lib/loading';
-import { AppwriteException } from 'node-appwrite';
+import { AppwriteException, Databases } from 'node-appwrite';
 import * as Table from 'cli-table3';
+import { AppwriteUnauthorizedException } from '../appwrite/appwrite.service';
 
 interface VmListCommandOptions {}
 interface VmCreateCommandOptions {}
@@ -21,25 +22,35 @@ export class VmListCommand extends CommandRunner {
   }
   async run(passedParam: string[], options?: VmListCommandOptions): Promise<void> {
     const table = new Table({
-      head: ['id', 'name', 'size', 'url'],
+      head: ['id', 'name', 'size', 'url', 'status'],
     });
 
-    await loading(
-      'Retreiving vm list...',
-      async () => {
-        const list = await this.vmService.getVmList();
-        if (list.total) {
-          list.documents.forEach((doc) =>
-            table.push([doc.$id, doc['name'], doc['size'], `https://${doc['name']}.devserver.sh`]),
-          );
-        } else {
-          table.push([{ content: colors.gray('No virtual machines found'), colSpan: 4 }]);
-        }
-      },
-      true,
-    );
+    try {
+      await loading(
+        'Retreiving vm list...',
+        async () => {
+          const list = await this.vmService.getVmList();
+          if (list.total) {
+            list.documents.forEach((doc) =>
+              table.push([doc.$id, doc['name'], doc['size'], `https://${doc['name']}.devserver.sh`, doc['status']]),
+            );
+          } else {
+            table.push([{ content: colors.gray('No virtual machines found'), colSpan: 5 }]);
+          }
+        },
+        true,
+      );
 
-    console.log(table.toString());
+      console.log(table.toString());
+    } catch (err: any) {
+      if (err instanceof AppwriteException || err instanceof AppwriteUnauthorizedException) {
+        console.error(`${err.code}: ${err.message}`);
+        return process.exit(1);
+      } else {
+        console.error(err);
+        return process.exit(1);
+      }
+    }
   }
 }
 
@@ -49,11 +60,10 @@ export class VmCreateCommand extends CommandRunner {
     super();
   }
   async run(passedParam: string[], options?: VmCreateCommandOptions): Promise<void> {
+    let vm: any;
     const answers = await inquirer.prompt(questionsVmCreate);
-
     if (answers?.confirm) {
       try {
-        let vm: any;
         await loading('Saving virtual machine parameters...', async () => {
           vm = await this.vmService.createVm({
             name: answers.name,
@@ -63,24 +73,48 @@ export class VmCreateCommand extends CommandRunner {
             password_hash: createHash('sha512').update(answers.password).digest('hex'),
             // eslint-disable-next-line newline-per-chained-call
             code_server_password_hash: createHash('sha256').update(answers.password).digest('hex'),
-            public_ports: [],
-            public_ports_auth_username: 'web',
-            public_ports_auth_password_hash: apacheMd5('web'),
+            public_port: [],
+            public_port_username: 'web',
+            public_port_password_hash: apacheMd5('web'),
           });
         });
         console.log(`Virtual machine created, ID: ${vm.$id}`);
       } catch (err: any) {
-        if (err instanceof AppwriteException) {
+        if (err instanceof AppwriteException || err instanceof AppwriteUnauthorizedException) {
           console.error(`${err.code}: ${err.message}`);
           return process.exit(1);
         } else {
-          throw err;
+          console.error(err);
+          return process.exit(1);
         }
       }
 
-      await loading('Deploying virtual machine...', () => {
-        return new Promise((resolve) => setTimeout(resolve, 3000));
+      const vmId = vm.$id;
+      await loading('Deploying virtual machine...', async () => {
+        return new Promise((resolve) => {
+          let interval = setInterval(() => {
+            this.vmService.getVm(vmId).then((doc) => {
+              if (["running"].includes(doc['status'])) {
+                clearInterval(interval);
+                resolve(true);
+              }
+              if (["deploy-failed"].includes(doc['status'])) {
+                clearInterval(interval);
+                resolve(false);
+              }
+            })
+          }, 1000)
+        });
       });
+
+      vm = await this.vmService.getVm(vmId);
+      if (vm['status'] == "deploy-failed") {
+        console.error(`Deploy failed! Please contact support.`);
+      }
+
+      if (vm['status'] == "running") {
+        console.error(`Deploy finished! Please follow this link: https://${vm['name']}.devserver.sh`);
+      }
     }
   }
 }
@@ -91,7 +125,17 @@ export class VmUpdateCommand extends CommandRunner {
     super();
   }
   async run(passedParam: string[], options?: VmUpdateCommandOptions): Promise<void> {
-    process.stdout.write(Buffer.from('vm updated'));
+    try {
+      process.stdout.write(Buffer.from('vm updated'));
+    } catch (err: any) {
+      if (err instanceof AppwriteException || err instanceof AppwriteUnauthorizedException) {
+        console.error(`${err.code}: ${err.message}`);
+        return process.exit(1);
+      } else {
+        console.error(err);
+        return process.exit(1);
+      }
+    }
   }
 }
 
@@ -111,11 +155,12 @@ export class VmDestroyCommand extends CommandRunner {
           });
         });
       } catch (err: any) {
-        if (err instanceof AppwriteException) {
+        if (err instanceof AppwriteException || err instanceof AppwriteUnauthorizedException) {
           console.error(`${err.code}: ${err.message}`);
           return process.exit(1);
         } else {
-          throw err;
+          console.error(err);
+          return process.exit(1);
         }
       }
     }

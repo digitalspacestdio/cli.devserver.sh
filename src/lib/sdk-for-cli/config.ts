@@ -356,7 +356,7 @@ class Global extends Config {
 
   getProject() {
     if (!this.has(Global.PREFERENCE_PROJECT)) {
-      return 'devserversh';
+      return '65909f6f4095b002cb91';
     }
     return this.get(Global.PREFERENCE_PROJECT);
   }
