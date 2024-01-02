@@ -73,9 +73,9 @@ export class VmCreateCommand extends CommandRunner {
             password_hash: createHash('sha512').update(answers.password).digest('hex'),
             // eslint-disable-next-line newline-per-chained-call
             code_server_password_hash: createHash('sha256').update(answers.password).digest('hex'),
-            public_port: [],
-            public_port_username: 'web',
-            public_port_password_hash: apacheMd5('web'),
+            public_port: answers.public_port.split(","),
+            public_port_username: answers.public_port_username,
+            public_port_password_hash: apacheMd5(answers.public_port_password),
           });
         });
         console.log(`Virtual machine created, ID: ${vm.$id}`);

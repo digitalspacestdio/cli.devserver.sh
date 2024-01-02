@@ -1,3 +1,4 @@
+import { ID } from 'node-appwrite';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
 
 export const questionsVmCreate = [
@@ -27,7 +28,7 @@ export const questionsVmCreate = [
   {
     type: 'input',
     name: 'username',
-    message: 'Username  (1 - 32 symbols)',
+    message: 'System Username (1 - 32 symbols)',
     default: 'developer',
     validate(value: string | any[]) {
       if (value.length < 3) {
@@ -43,12 +44,71 @@ export const questionsVmCreate = [
   {
     type: 'password',
     name: 'password',
-    message: 'Password (only the hash will be used)',
+    message: 'System Password (will be hashed)',
     mask: '*',
     validate(value: string) {
       if (!value) {
         return "Password can't be empty";
       }
+      if (value.length < 8) {
+        return 'Minimum length: 8';
+      }
+      return true;
+    },
+  },
+  {
+    type: 'input',
+    name: 'public_port',
+    message: 'Public Port(s) (3rd party access)',
+    default: 'none',
+    validate(value: string) {
+      if (value) {
+        const ports = value.split(",");
+        for (var i = 0; i < ports.length; i++) {
+          if (parseInt(ports[i]) < 1025) {
+            return 'Minimum port is: 1025';
+          }
+          if (parseInt(ports[i]) > 65535) {
+            return 'Maximum port is: 65535';
+          }
+        }
+      }
+
+      return true;
+    },
+  },
+  {
+    type: 'input',
+    name: 'public_port_username',
+    message: 'Public Username (1 - 32 symbols)',
+    default: 'web',
+    when: (current: { public_port: any; }) => {
+      return !!current.public_port && current.public_port != 'none';
+    },
+    validate(value: string | any[]) {
+      if (value.length < 3) {
+        return 'Minimum length: 3';
+      }
+      if (value.length > 32) {
+        return 'Maximum length: 32';
+      }
+
+      return true;
+    },
+  },
+  {
+    type: 'public_port_password',
+    name: 'public_port_password',
+    message: 'Public Password (will be hashed)',
+    mask: '*',
+    when: (current: { public_port: any; }) => {
+      return !!current.public_port && current.public_port != 'none';
+    },
+    validate(value: string) {
+      if (!value) {
+        return "Password can't be empty";
+      }
+
       return true;
     },
   },

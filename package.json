@@ -94,11 +94,14 @@
     "testEnvironment": "node"
   },
   "bin": {
-    "devserver": "./dist/src/devserver.js"
+    "devserver.sh": "./src/devserver.js"
   },
   "pkg": {
     "scripts": "dist/**/*.js",
     "targets": [ "node18-macos-arm64" ],
     "outputPath": "pkg"
+  },
+  "exports": {
+    "./package.json": "./package.json"
   }
 }
