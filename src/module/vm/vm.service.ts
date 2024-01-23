@@ -13,8 +13,12 @@ interface VmCreateDto {
   public_port_password_hash: string;
 }
 
+interface VmCreateDtoTenant extends VmCreateDto {
+  tenant: string;
+}
+
 interface VmDestroyDto {
-  id: string;
+  ids: Array<String>;
 }
 
 @Injectable()
@@ -26,16 +30,40 @@ export class VmService {
   }
 
   public async getVmList() {
-    const vmList = await (await this.appwrite.getDatabases()).listDocuments(this.appwrite.databaseId, this.appwrite.vmCollectionId);
+    return await (await this.appwrite.getDatabases()).listDocuments(this.appwrite.databaseId, this.appwrite.vmCollectionId);
+  }
 
-    return vmList;
+  public async getTenantList() {
+    return await (await this.appwrite.getDatabases()).listDocuments(this.appwrite.databaseId, this.appwrite.tenantCollectionId);
   }
 
   public async createVm(dto: VmCreateDto) {
-    return await (await this.appwrite.getDatabases()).createDocument(this.appwrite.databaseId, this.appwrite.vmCollectionId, ID.unique(), dto);
+
+    const resp = await (await this.appwrite.getFunctions()).createExecution('VmCreate', JSON.stringify(dto), false);
+
+    if (resp.statusCode > 200) {
+      if (resp.response) {
+        throw JSON.parse(resp.response)?.error || "Execution status: " + resp.status;
+      }
+    }
+
+    return JSON.parse(resp.response)?.vm as Models.Document;
   }
 
-  public async destroyVm(dto: VmDestroyDto) {
-    return await (await this.appwrite.getDatabases()).deleteDocument(this.appwrite.databaseId, this.appwrite.vmCollectionId, dto.id);
+  public async destroyVm(dto: VmDestroyDto): Promise<Array<Models.Document>> {
+    const resp = await (await this.appwrite.getFunctions()).createExecution('VmDestroy', JSON.stringify(dto), false);
+    if (resp.statusCode > 299) {
+      const error = resp.response ? JSON.parse(resp.response)?.error : null;
+
+      throw error || "Execution status: " + resp.status;
+    }
+
+    if (!resp?.response) {
+      throw "Empty response!";
+    }
+
+    return JSON.parse(resp.response)?.tasks as Array<Models.Document>;
+
+    //return await (await this.appwrite.getDatabases()).deleteDocument(this.appwrite.databaseId, this.appwrite.vmCollectionId, dto.id);
   }
 }

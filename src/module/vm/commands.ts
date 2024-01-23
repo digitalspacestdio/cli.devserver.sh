@@ -64,7 +64,7 @@ export class VmCreateCommand extends CommandRunner {
     const answers = await inquirer.prompt(questionsVmCreate);
     if (answers?.confirm) {
       try {
-        await loading('Saving virtual machine parameters...', async () => {
+        await loading('Saving virtual machine settings...', async () => { 
           vm = await this.vmService.createVm({
             name: answers.name,
             size: answers.size,
@@ -73,9 +73,9 @@ export class VmCreateCommand extends CommandRunner {
             password_hash: createHash('sha512').update(answers.password).digest('hex'),
             // eslint-disable-next-line newline-per-chained-call
             code_server_password_hash: createHash('sha256').update(answers.password).digest('hex'),
-            public_port: answers.public_port.split(","),
+            public_port: answers.public_port.split(",").filter((port) => parseInt(port) > 0),
             public_port_username: answers.public_port_username,
-            public_port_password_hash: apacheMd5(answers.public_port_password),
+            public_port_password_hash: answers?.public_port_password ? apacheMd5(answers.public_port_password) : '',
           });
         });
         console.log(`Virtual machine created, ID: ${vm.$id}`);
@@ -83,10 +83,11 @@ export class VmCreateCommand extends CommandRunner {
         if (err instanceof AppwriteException || err instanceof AppwriteUnauthorizedException) {
           console.error(`${err.code}: ${err.message}`);
           return process.exit(1);
-        } else {
-          console.error(err);
-          return process.exit(1);
-        }
+        } 
+
+        console.error(err);
+
+        return process.exit(1);
       }
 
       const vmId = vm.$id;
@@ -151,7 +152,7 @@ export class VmDestroyCommand extends CommandRunner {
       try {
         await loading('Initiating the destroy of the virtual machine...', async () => {
           await this.vmService.destroyVm({
-            id: answers.id,
+            ids: [answers.id],
           });
         });
       } catch (err: any) {

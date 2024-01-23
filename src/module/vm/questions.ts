@@ -1,4 +1,3 @@
-import { ID } from 'node-appwrite';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
 
 export const questionsVmCreate = [
@@ -22,7 +21,12 @@ export const questionsVmCreate = [
     type: 'rawlist',
     name: 'size',
     message: 'Machine size',
-    choices: ['s', 'm', 'l', 'xl'],
+    choices: [
+      {'name' : 's  (cpu: 1, ram: 2GB, disk: 16GB)', 'value' : 's'},
+      {'name' : 'm  (cpu: 2, ram: 4GB, disk: 32GB)', 'value' : 'm'},
+      {'name' : 'l  (cpu: 2, ram: 6GB, disk: 64GB)', 'value' : 'l'},
+      {'name' : 'xl (cpu: 4, ram: 8GB, disk: 128GB)', 'value' : 'xl'}
+    ],
     default: 's',
   },
   {
@@ -53,6 +57,19 @@ export const questionsVmCreate = [
       if (value.length < 8) {
         return 'Minimum length: 8';
       }
+      return true;
+    },
+  },
+  {
+    type: 'password',
+    name: 'password_confirmation',
+    message: 'System Password Confirmation',
+    mask: '*',
+    validate(value: string, answers: object) {
+      if (value != answers['password']) {
+        return "Passwords mismatch!";
+      }
+
       return true;
     },
   },
@@ -97,10 +114,11 @@ export const questionsVmCreate = [
     },
   },
   {
-    type: 'public_port_password',
+    type: 'password',
     name: 'public_port_password',
     message: 'Public Password (will be hashed)',
     mask: '*',
+    default: 'web',
     when: (current: { public_port: any; }) => {
       return !!current.public_port && current.public_port != 'none';
     },
